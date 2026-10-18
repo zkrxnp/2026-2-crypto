@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; connect-src ws: wss:; base-uri 'none'; form-action 'none'">
+  <title>E2EE 채팅</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 접속 화면 -->
+  <section id="login-view" class="login">
+    <form id="login-form" class="login-card" autocomplete="off" novalidate>
+      <h1>E2EE 채팅</h1>
+      <p class="muted">메시지는 이 브라우저 안에서 암호화되어 서버는 내용을 볼 수 없습니다.</p>
+
+      <label for="nickname">닉네임</label>
+      <input id="nickname" name="nickname" maxlength="20" placeholder="2~20자, 한글/영문/숫자/_/-" required>
+
+      <label for="server-url">서버 주소</label>
+      <input id="server-url" name="server-url" spellcheck="false" required>
+
+      <button id="login-button" type="submit">접속</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </section>
+
+  <!-- 채팅 화면 -->
+  <section id="chat-view" class="chat" hidden>
+    <aside class="sidebar">
+      <div class="me">
+        <div class="me-name" id="me-name"></div>
+        <div class="me-status"><span id="conn-dot" class="dot"></span><span id="conn-text"></span></div>
+      </div>
+
+      <h2>접속자</h2>
+      <ul id="peer-list" class="peer-list"></ul>
+      <p id="peer-empty" class="muted small">다른 접속자를 기다리는 중…</p>
+
+      <details class="tools" id="tools">
+        <summary>보안 검증 도구</summary>
+        <label for="tamper-mode">다음 메시지 1건 변조</label>
+        <select id="tamper-mode">
+          <option value="none">변조 안 함</option>
+          <option value="ciphertext">암호문 1비트 뒤집기</option>
+          <option value="tag">인증 태그 1비트 뒤집기</option>
+          <option value="iv">IV(nonce) 1비트 뒤집기</option>
+          <option value="seq">seq 값 바꾸기 (AAD 변조)</option>
+        </select>
+        <button id="replay-button" type="button" class="secondary">마지막 메시지 그대로 재전송</button>
+        <p class="muted small">변조는 암호화가 끝난 뒤 서버로 보내기 직전에 적용됩니다. 전송 구간에서 누군가 값을 바꾼 상황을 흉내 냅니다.</p>
+        <label for="my-pubkey">내 공개키 (서버가 아는 값)</label>
+        <textarea id="my-pubkey" rows="3" readonly></textarea>
+      </details>
+
+      <button id="logout-button" type="button" class="secondary">나가기</button>
+    </aside>
+
+    <main class="conversation">
+      <div id="banner" class="banner" hidden></div>
+
+      <header id="conv-header" class="conv-header" hidden>
+        <div class="conv-title">
+          <span id="conv-name"></span>
+          <span id="conv-state" class="badge"></span>
+        </div>
+        <div id="safety" class="safety" hidden>
+          <span class="muted small">안전 번호</span>
+          <code id="safety-number"></code>
+          <label class="small"><input id="safety-verified" type="checkbox"> 상대 화면과 같음</label>
+        </div>
+      </header>
+
+      <div id="placeholder" class="placeholder muted">왼쪽에서 대화할 상대를 고르세요.</div>
+      <ol id="messages" class="messages" hidden></ol>
+
+      <form id="send-form" class="send-form" hidden>
+        <textarea id="message-input" rows="2" maxlength="2000" placeholder="메시지 입력 (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
+        <button id="send-button" type="submit">전송</button>
+      </form>
+    </main>
+  </section>
+
+  <script src="crypto.js"></script>
+  <script src="relay.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
